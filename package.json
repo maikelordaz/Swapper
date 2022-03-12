@@ -1,0 +1,28 @@
+{
+  "name": "swapp_tool",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "coverage": "hardhat coverage"
+  },
+  "author": "",
+  "license": "GPL",
+  "keywords": [],
+  "description": "",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@nomiclabs/hardhat-etherscan": "^3.0.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@openzeppelin/contracts-upgradeable": "^4.5.2",
+    "@openzeppelin/hardhat-upgrades": "^1.16.0",
+    "chai": "^4.3.6",
+    "dotenv": "^16.0.0",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.6.0",
+    "hardhat": "^2.9.1",
+    "hardhat-gas-reporter": "^1.0.8",
+    "solidity-coverage": "^0.7.20"
+  }
+}
