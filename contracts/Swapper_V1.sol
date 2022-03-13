@@ -16,6 +16,7 @@ contract Swapper is Initializable, OwnableUpgradeable {
 // VARIABLES //
 
     uint public fee;
+    address public recipient;
 
 // MAPPINGS //
 // EVENTS //
@@ -24,13 +25,37 @@ contract Swapper is Initializable, OwnableUpgradeable {
     function initialize() 
         public
         initializer {
-            __Ownable_init();
+            __Ownable_init();            
+        }
+    /**
+    * @notice a function to set the fee for every swap.
+    * @dev only the owner of the contract can change the fee.
+    * @param _fee the percentage of the fee. it has to be multiplied by ten. Example for a 0.1%
+    * the _fee is 1.
+    */
+    function setFee(uint _fee) 
+        private
+        onlyOwner {
+            fee = _fee * 1 / 1000;        
+    }
+    /**
+    * @notice a function to set the address who receive the fee for every swap.
+    * @dev only the owner of the contract can change this address.
+    * @param _recipient the percentage of the fee. it has to be multiplied by ten. Example for a 0.1%
+    * the _fee is 1.
+    */
+    function setRecipient(address _recipient) 
+        private
+        onlyOwner {
+            _recipient = owner();
+            recipient = _recipient;
+    }
+
+    function swap (address TokenIn, address TokenOut, uint amount)
+        internal {
             
         }
 
-    function setFee(uint _fee) private {
-        fee = _fee * 1 / 100;
-        
-    }
+
 
 }
