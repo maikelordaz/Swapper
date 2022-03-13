@@ -1,5 +1,12 @@
 //SPDX-License-Identifier: GNL
-
+/**
+* @title Swapper tool
+* @author Maikel Ordaz.
+* @notice a multitokens swap smart contract, that allows to make multiple transactions
+* in one single operations, just giving the tokens that we want and the percentage that
+* we want it.
+* @dev this contract is upgradeable, and this is the first version.
+*/
 pragma solidity ^0.8.4;
 
 // CONTRACTS INHERITED //
@@ -9,21 +16,25 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 // LIBRARIES USED //
-
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 
 // VERSION 1 //
 
 contract Swapper is Initializable, OwnableUpgradeable {
 
+using SafeMathUpgradeable for uint256;
+
 // VARIABLES //
 
-    uint public fee;
+    uint256 public fee;
     address public recipient;
     address private UniswapV2Router02;
     address private WETH;
 
-// MAPPINGS //
 // EVENTS //
+
+    event Swap (address tokenIn, address tokenOut, address receiver);
+
 // FUNCTIONS //
 
     function initialize() 
@@ -43,7 +54,7 @@ contract Swapper is Initializable, OwnableUpgradeable {
         private
         onlyOwner {
             require(_fee > 0);
-            fee = _fee * 1 / 1000;        
+            fee = _fee.div(1000);        
     }
     /**
     * @notice a function to set the address who receive the fee for every swap.
@@ -66,8 +77,8 @@ contract Swapper is Initializable, OwnableUpgradeable {
     */
     function _swap(address _tokenIn, 
                    address _tokenOut, 
-                   uint _amountIn, 
-                   uint _amountOutMin, 
+                   uint256 _amountIn, 
+                   uint256 _amountOutMin, 
                    address _to)
         internal{
 
@@ -88,26 +99,31 @@ contract Swapper is Initializable, OwnableUpgradeable {
     * @notice a function to make multiple swaps given a percentage of wanted tokens.
     * @dev this is the mai function.
     * @param tokenIn the address of the token that the use has.
+    * @param amountOutMin the minimum tokens to get.
     * @param tokensOut an array with addresses of tokens that the user wants.
     * @param percentage an array with percentages of every token that the user wants. 
     */
-    function swap(address tokenIn, address[] memory tokensOut, uint[] memory percentage) 
+    function swap(address tokenIn,
+                  uint256 amountOutMin, 
+                  address[] memory tokensOut, 
+                  uint256[] memory percentage) 
         public 
         payable {
 
+            amountOutMin = 1;
             require(msg.value > 0, "You have to change something.");
             require(tokensOut.length == percentage.length, 
                     "The number of tokens has to be equal to the percentages.");
-            uint minusFee = msg.value - (msg.value*fee);
+            uint256 minusFee = msg.value.sub(msg.value.mul(fee));
             for (uint i = 0; i < tokensOut.length; i++) {
                 _swap(
                     tokenIn, 
                     tokensOut[i], 
-                    minusFee*percentage[i], 
-                    1, 
+                    minusFee.mul(percentage[i]).div(100), 
+                    amountOutMin, 
                     msg.sender);
+                emit Swap(tokenIn, tokensOut[i], msg.sender);
             }
             payable(recipient).transfer(address(this).balance);
     }
-
 }

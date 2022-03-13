@@ -3,6 +3,7 @@ require ("@nomiclabs/hardhat-waffle");
 require ("@nomiclabs/hardhat-etherscan");
 require ("hardhat-gas-reporter");
 require ("solidity-coverage");
+require('@openzeppelin/hardhat-upgrades');
 
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -24,4 +25,14 @@ module.exports = {
       },
     ],
   },
+
+  defaultNetwork: "hardhat",
+   networks: {
+     hardhat: {
+       forking: {
+         url: process.env.ALCHEMY_MAINNET_RPC_URL,
+         blockNumber: 14378000
+       }
+     }
+    }
 };
