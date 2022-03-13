@@ -24,5 +24,8 @@
     "hardhat": "^2.9.1",
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-coverage": "^0.7.20"
+  },
+  "dependencies": {
+    "@uniswap/v3-periphery": "^1.4.0"
   }
 }
