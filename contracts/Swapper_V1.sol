@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 //INTERFACES USED //
 //LIBRARIES USED //
 
+
 // VERSION 1 //
 
 contract Swapper is Initializable, OwnableUpgradeable {
@@ -20,15 +21,16 @@ contract Swapper is Initializable, OwnableUpgradeable {
 // EVENTS //
 // FUNCTIONS //
 
-    function initialize(uint _fee) 
+    function initialize() 
         public
         initializer {
             __Ownable_init();
-            fee = 0.1;
+            
         }
 
-    function setFee() private {
-        fee = 1 * 0.1 / 100;
+    function setFee(uint _fee) private {
+        fee = _fee * 1 / 100;
+        
     }
 
 }
