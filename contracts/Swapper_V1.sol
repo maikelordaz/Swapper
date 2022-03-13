@@ -5,11 +5,10 @@ pragma solidity ^0.8.4;
 // CONTRACTS INHERITED //
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-//INTERFACES USED //
+// INTERFACES USED //
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-//LIBRARIES USED //
-import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
+// LIBRARIES USED //
 
 
 // VERSION 1 //
@@ -20,8 +19,8 @@ contract Swapper is Initializable, OwnableUpgradeable {
 
     uint public fee;
     address public recipient;
-    address private constant UniswapV2Router02;
-    address private constant WETH;
+    address private UniswapV2Router02;
+    address private WETH;
 
 // MAPPINGS //
 // EVENTS //
@@ -58,8 +57,23 @@ contract Swapper is Initializable, OwnableUpgradeable {
             recipient = _recipient;
     }
 
-    function swap (address TokenIn, address TokenOut, uint amount)
-        internal {
+    function swap (address tokenIn, 
+                   address tokenOut, 
+                   uint amountIn, 
+                   uint amountOutMin, 
+                   address to)
+        internal{
+
+            IERC20Upgradeable(tokenIn).transferFrom(msg.sender, address(this), amountIn);
+            IERC20Upgradeable(tokenIn).approve(UniswapV2Router02, amountIn);
+            address[] memory path;
+            path = new address[](3);
+            path[0] = tokenIn;
+            path[1] = WETH;
+            path[2] = tokenOut;
+            IUniswapV2Router02(UniswapV2Router02).
+                swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    amountIn, amountOutMin, path, to, block.timestamp);
 
         }
 
