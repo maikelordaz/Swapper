@@ -42,41 +42,72 @@ contract Swapper is Initializable, OwnableUpgradeable {
     function setFee(uint _fee) 
         private
         onlyOwner {
+            require(_fee > 0);
             fee = _fee * 1 / 1000;        
     }
     /**
     * @notice a function to set the address who receive the fee for every swap.
     * @dev only the owner of the contract can change this address.
-    * @param _recipient the percentage of the fee. it has to be multiplied by ten. Example for a 0.1%
-    * the _fee is 1.
     */
-    function setRecipient(address _recipient) 
+    function setRecipient() 
         private
         onlyOwner {
-            _recipient = owner();
+            address _recipient = owner();
             recipient = _recipient;
     }
-
-    function swap (address tokenIn, 
-                   address tokenOut, 
-                   uint amountIn, 
-                   uint amountOutMin, 
-                   address to)
+    /**
+    * @notice a function to swap betwen tokens.
+    * @dev this is an auxiliar function.
+    * @param _tokenIn is the address of the token that the user have.
+    * @param _tokenOut is the address of the token that the user wants.
+    * @param _amountIn is the amount of tokens the user has.
+    * @param _amountOutMin is the amount of tokens the user wants.
+    * @param _to is the address of the swap recipient. 
+    */
+    function _swap(address _tokenIn, 
+                   address _tokenOut, 
+                   uint _amountIn, 
+                   uint _amountOutMin, 
+                   address _to)
         internal{
 
-            IERC20Upgradeable(tokenIn).transferFrom(msg.sender, address(this), amountIn);
-            IERC20Upgradeable(tokenIn).approve(UniswapV2Router02, amountIn);
-            address[] memory path;
-            path = new address[](3);
-            path[0] = tokenIn;
-            path[1] = WETH;
-            path[2] = tokenOut;
+            require(_tokenIn != _tokenOut, "You have to change betwen diferent tokens.");
+            require(_amountIn > 0, "You have to change something.");
+            IERC20Upgradeable(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);
+            IERC20Upgradeable(_tokenIn).approve(UniswapV2Router02, _amountIn);
+            address[] memory _path;
+            _path = new address[](3);
+            _path[0] = _tokenIn;
+            _path[1] = WETH;
+            _path[2] = _tokenOut;
             IUniswapV2Router02(UniswapV2Router02).
                 swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                    amountIn, amountOutMin, path, to, block.timestamp);
-
+                    _amountIn, _amountOutMin, _path, _to, block.timestamp);
         }
+    /**
+    * @notice a function to make multiple swaps given a percentage of wanted tokens.
+    * @dev this is the mai function.
+    * @param tokenIn the address of the token that the use has.
+    * @param tokensOut an array with addresses of tokens that the user wants.
+    * @param percentage an array with percentages of every token that the user wants. 
+    */
+    function swap(address tokenIn, address[] memory tokensOut, uint[] memory percentage) 
+        public 
+        payable {
 
-
+            require(msg.value > 0, "You have to change something.");
+            require(tokensOut.length == percentage.length, 
+                    "The number of tokens has to be equal to the percentages.");
+            uint minusFee = msg.value - (msg.value*fee);
+            for (uint i = 0; i < tokensOut.length; i++) {
+                _swap(
+                    tokenIn, 
+                    tokensOut[i], 
+                    minusFee*percentage[i], 
+                    1, 
+                    msg.sender);
+            }
+            payable(recipient).transfer(address(this).balance);
+    }
 
 }
