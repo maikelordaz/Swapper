@@ -6,7 +6,10 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 //INTERFACES USED //
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 //LIBRARIES USED //
+import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
 
 // VERSION 1 //
@@ -17,6 +20,8 @@ contract Swapper is Initializable, OwnableUpgradeable {
 
     uint public fee;
     address public recipient;
+    address private constant UniswapV2Router02;
+    address private constant WETH;
 
 // MAPPINGS //
 // EVENTS //
@@ -25,7 +30,9 @@ contract Swapper is Initializable, OwnableUpgradeable {
     function initialize() 
         public
         initializer {
-            __Ownable_init();            
+            __Ownable_init(); 
+            UniswapV2Router02 = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D; 
+            WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;          
         }
     /**
     * @notice a function to set the fee for every swap.
@@ -53,7 +60,7 @@ contract Swapper is Initializable, OwnableUpgradeable {
 
     function swap (address TokenIn, address TokenOut, uint amount)
         internal {
-            
+
         }
 
 
