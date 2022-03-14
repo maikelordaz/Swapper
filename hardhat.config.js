@@ -4,6 +4,7 @@ require ("@nomiclabs/hardhat-etherscan");
 require ("hardhat-gas-reporter");
 require ("solidity-coverage");
 require('@openzeppelin/hardhat-upgrades');
+require("@nomiclabs/hardhat-web3");
 
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -16,6 +17,9 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 module.exports = {
   solidity: {
     compilers: [
+      {
+        version: "0.7.0",
+      },
       {
         version: "0.7.6",
       },
@@ -31,7 +35,7 @@ module.exports = {
      hardhat: {
        forking: {
          url: process.env.ALCHEMY_MAINNET_RPC_URL,
-         blockNumber: 14378000
+         blockNumber: 14381000
        }
      }
     }

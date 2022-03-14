@@ -31,10 +31,6 @@ using SafeMathUpgradeable for uint256;
     address private UniswapV2Router02;
     address private WETH;
 
-// EVENTS //
-
-    event Swap (address tokenIn, address tokenOut, address receiver);
-
 // FUNCTIONS //
 
     function initialize() 
@@ -47,11 +43,11 @@ using SafeMathUpgradeable for uint256;
     /**
     * @notice a function to set the fee for every swap.
     * @dev only the owner of the contract can change the fee.
-    * @param _fee the percentage of the fee. it has to be multiplied by ten. Example for a 0.1%
-    * the _fee is 1.
+    * @param _fee the percentage of the fee. it has to be multiplied by ten. Example for
+    * a 0.1% the _fee is 1.
     */
     function setFee(uint _fee) 
-        private
+        public
         onlyOwner {
             require(_fee > 0);
             fee = _fee.div(1000);        
@@ -60,10 +56,10 @@ using SafeMathUpgradeable for uint256;
     * @notice a function to set the address who receive the fee for every swap.
     * @dev only the owner of the contract can change this address.
     */
-    function setRecipient() 
-        private
+    function setRecipient(address _recipient) 
+        public
         onlyOwner {
-            address _recipient = owner();
+            require(_recipient != address(0));
             recipient = _recipient;
     }
     /**
@@ -83,7 +79,6 @@ using SafeMathUpgradeable for uint256;
         internal{
 
             require(_tokenIn != _tokenOut, "You have to change betwen diferent tokens.");
-            require(_amountIn > 0, "You have to change something.");
             IERC20Upgradeable(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);
             IERC20Upgradeable(_tokenIn).approve(UniswapV2Router02, _amountIn);
             address[] memory _path;
@@ -104,25 +99,24 @@ using SafeMathUpgradeable for uint256;
     * @param percentage an array with percentages of every token that the user wants. 
     */
     function swap(address tokenIn,
+                  uint256 amountIn,
                   uint256 amountOutMin, 
                   address[] memory tokensOut, 
-                  uint256[] memory percentage) 
-        public 
-        payable {
+                  uint256[] memory percentage,
+                  address to) 
+        public {
 
-            amountOutMin = 1;
-            require(msg.value > 0, "You have to change something.");
+            require(amountIn > 0, "You have to change something.");
             require(tokensOut.length == percentage.length, 
                     "The number of tokens has to be equal to the percentages.");
-            uint256 minusFee = msg.value.sub(msg.value.mul(fee));
+            uint256 minusFee = amountIn.sub(amountIn.mul(fee));
             for (uint i = 0; i < tokensOut.length; i++) {
                 _swap(
                     tokenIn, 
                     tokensOut[i], 
                     minusFee.mul(percentage[i]).div(100), 
                     amountOutMin, 
-                    msg.sender);
-                emit Swap(tokenIn, tokensOut[i], msg.sender);
+                    to);
             }
             payable(recipient).transfer(address(this).balance);
     }
