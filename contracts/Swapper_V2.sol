@@ -32,7 +32,6 @@ using SafeMathUpgradeable for uint256;
     uint256 public fee;
     address payable recipient;
     address private UniswapV2Router02;
-    address private WETH;
     address private tokenTransferProxy;
     address private augustusSwapper;
     IParaswap internal Paraswap;
@@ -78,7 +77,7 @@ using SafeMathUpgradeable for uint256;
 //================================= UNISWAP ===========================================//    
  
     /**
-    * @notice a function to swap betwen tokens.
+    * @notice a function to swap betwen tokens with uniswap.
     * @dev this is an auxiliar function.
     * @param _tokenIn is the address of the token that the user have.
     * @param _tokenOut is the address of the token that the user wants.
@@ -106,7 +105,8 @@ using SafeMathUpgradeable for uint256;
         }
     /**
     * @notice a function to make multiple token swaps given a percentage of wanted tokens.
-    * @dev this is the mai function.
+    * all this on uniswap.
+    * @dev this is the main function.
     * @param tokenIn the address of the token that the use has.
     * @param amountIn is the amount of tokens the user has.
     * @param amountOutMin the minimum tokens to get.
@@ -138,7 +138,14 @@ using SafeMathUpgradeable for uint256;
     }
 
 //==================================== PARASWAP =======================================//
-  
+    /**
+    * @notice a function to swap betwen tokens on paraswap.
+    * @dev this is an auxiliar function.
+    * @param _tokenIn is the address of the token that the user have.
+    * @param _tokenOut is the address of the token that the user wants.
+    * @param _amountIn is the amount of tokens the user has.
+    * @param _slippage to sort the movement of the price. 
+    */
     function _swapParaswap(address _tokenIn, 
                            address _tokenOut, 
                            uint256 _amountIn,
@@ -159,51 +166,38 @@ using SafeMathUpgradeable for uint256;
             abi.encodeWithSignature("swapOnUniswap(uint256 amountIn, uint256 amountOutMin, address[] calldata path)",
             _amountIn,
             _toAmount,
-            _path
-            )
-        );
-/*
-
-
- 
-
-
-
-
-            Utils.Route memory _route = Utils.Route(_index,
-                                                    _exchange,
-                                                    _slippage,
-                                                    _payload,
-                                                    _networkFee);
-
-                                                    
-
-            Utils.Adapter memory _adapter = Utils.Adapter(_exchange,
-                                                          _percent,
-                                                          _networkFee,
-                                                          _route);
-
-            Utils.Path memory _path = Utils.Path(_tokenOut,
-                                                 _networkFee,
-                                                 _adapter);
-            
-            Utils.SellData memory _sellData = Utils.SellData(_tokenIn,
-                                                             _amountIn,
-                                                             _toAmount,
-                                                             _toAmount,
-                                                             _to,
-                                                             _path,
-                                                             recipient,
-                                                             fee,
-                                                             _permit,
-                                                             block.timestamp + 1,
-                                                             "");
-            
-            (bool result,) = augustusSwapper.call{value: _amountIn, gas: 10000}(
-                abi.encodeWithSignature("megaSwap(Utils.MegaSwapSellData calldata data)",
-                 _sellData));
-                 */
+            _path));
         }
+    /**
+    * @notice a function to make multiple token swaps given a percentage of wanted tokens.
+    * all this on paraswap.
+    * @dev this is the main function.
+    * @param tokenIn the address of the token that the use has.
+    * @param amountIn is the amount of tokens the user has.
+    * @param slippage to sort the movement of the price.
+    * @param tokensOut an array with addresses of tokens that the user wants.
+    * @param percentage an array with percentages of every token that the user wants.
+    */
+    function swapParaswap(address tokenIn,
+                          uint256 amountIn,
+                          uint256 slippage, 
+                          address[] memory tokensOut, 
+                          uint256[] memory percentage) 
+        public {
+
+            require(amountIn > 0, "You have to change something.");
+            require(tokensOut.length == percentage.length, 
+                    "The number of tokens has to be equal to the percentages.");
+            uint256 minusFee = amountIn.sub(amountIn.mul(fee));
+            for (uint i = 0; i < tokensOut.length; i++) {
+                _swapParaswap(
+                    tokenIn, 
+                    tokensOut[i], 
+                    minusFee.mul(percentage[i]).div(100), 
+                    slippage);
+            }
+            payable(recipient).transfer(address(this).balance);
+    }
 
 
 }

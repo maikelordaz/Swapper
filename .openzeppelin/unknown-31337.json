@@ -29,7 +29,7 @@
   "impls": {
     "759dccb5a49b4be072522770c0fe138b7cde610df503769ee407f130a46ec6e6": {
       "address": "0x5302E909d1e93e30F05B5D6Eea766363D14F9892",
-      "txHash": "0xcdeb7da7839a0df5050c34fb5baf27df103dc9160e0f48661fffd167340ce339",
+      "txHash": "0xf8e25769b818e7c0cd15cf172174a2fd450d2f5153f8f7f2ce1cf4e9b1b453c8",
       "layout": {
         "storage": [
           {
@@ -95,14 +95,6 @@
             "type": "t_address",
             "contract": "Swapper_V1",
             "src": "contracts\\Swapper_V1.sol:35"
-          },
-          {
-            "label": "WETH",
-            "offset": 0,
-            "slot": "104",
-            "type": "t_address",
-            "contract": "Swapper_V1",
-            "src": "contracts\\Swapper_V1.sol:36"
           }
         ],
         "types": {
@@ -127,9 +119,9 @@
         }
       }
     },
-    "2fead2d45444415b96dcd2d0c1a73e41effbeaa369114ea29fb2695de4d113e3": {
+    "c643b52cb377ad56153f122d5d47706ec7920123f120f008321946aa22726bd5": {
       "address": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
-      "txHash": "0x774ad090a2e72eb1e0f94170c3481d9cd439130b6f4b9863a0dbb5ee73f5155d",
+      "txHash": "0x88b9560c2d0000767f9adc53e082cbdd97565881f82522184d4803a72952ff4c",
       "layout": {
         "storage": [
           {
@@ -197,7 +189,7 @@
             "src": "contracts\\Swapper_V2.sol:38"
           },
           {
-            "label": "WETH",
+            "label": "tokenTransferProxy",
             "offset": 0,
             "slot": "104",
             "type": "t_address",
@@ -205,7 +197,7 @@
             "src": "contracts\\Swapper_V2.sol:39"
           },
           {
-            "label": "tokenTransferProxy",
+            "label": "augustusSwapper",
             "offset": 0,
             "slot": "105",
             "type": "t_address",
@@ -213,28 +205,20 @@
             "src": "contracts\\Swapper_V2.sol:40"
           },
           {
-            "label": "augustusSwapper",
+            "label": "Paraswap",
             "offset": 0,
             "slot": "106",
-            "type": "t_address",
+            "type": "t_contract(IParaswap)2845",
             "contract": "Swapper_V2",
             "src": "contracts\\Swapper_V2.sol:41"
           },
           {
-            "label": "Paraswap",
-            "offset": 0,
-            "slot": "107",
-            "type": "t_contract(IParaswap)2695",
-            "contract": "Swapper_V2",
-            "src": "contracts\\Swapper_V2.sol:42"
-          },
-          {
             "label": "paraswapTransfers",
             "offset": 0,
-            "slot": "108",
-            "type": "t_contract(IParaswap)2695",
+            "slot": "107",
+            "type": "t_contract(IParaswap)2845",
             "contract": "Swapper_V2",
-            "src": "contracts\\Swapper_V2.sol:43"
+            "src": "contracts\\Swapper_V2.sol:42"
           }
         ],
         "types": {
@@ -253,7 +237,7 @@
           "t_bool": {
             "label": "bool"
           },
-          "t_contract(IParaswap)2695": {
+          "t_contract(IParaswap)2845": {
             "label": "contract IParaswap"
           },
           "t_uint256": {

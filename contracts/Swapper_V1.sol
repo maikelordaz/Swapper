@@ -29,7 +29,6 @@ using SafeMathUpgradeable for uint256;
     uint256 public fee;
     address payable recipient;
     address private UniswapV2Router02;
-    address private WETH;
 
 // FUNCTIONS //
 
@@ -90,7 +89,7 @@ using SafeMathUpgradeable for uint256;
         }
     /**
     * @notice a function to make multiple token swaps given a percentage of wanted tokens.
-    * @dev this is the mai function.
+    * @dev this is the main function.
     * @param tokenIn the address of the token that the use has.
     * @param amountIn is the amount of tokens the user has.
     * @param amountOutMin the minimum tokens to get.
