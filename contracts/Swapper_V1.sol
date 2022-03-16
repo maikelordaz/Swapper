@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: GNL
 /**
-* @title Swapper tool
+* @title Swapper_V1 tool
 * @author Maikel Ordaz.
 * @notice a multitokens swap smart contract, that allows to make multiple transactions
 * in one single operations, just giving the tokens that we want and the percentage that
@@ -18,16 +18,16 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 // LIBRARIES USED //
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 
-// VERSION 1 //
+//================================ VERSION 1 ==========================================//
 
-contract Swapper is Initializable, OwnableUpgradeable {
+contract Swapper_V1 is Initializable, OwnableUpgradeable {
 
 using SafeMathUpgradeable for uint256;
 
 // VARIABLES //
 
     uint256 public fee;
-    address public recipient;
+    address payable recipient;
     address private UniswapV2Router02;
     address private WETH;
 
@@ -37,8 +37,7 @@ using SafeMathUpgradeable for uint256;
         public
         initializer {
             __Ownable_init(); 
-            UniswapV2Router02 = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D; 
-            WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;          
+            UniswapV2Router02 = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;           
         }
     /**
     * @notice a function to set the fee for every swap.
@@ -56,7 +55,7 @@ using SafeMathUpgradeable for uint256;
     * @notice a function to set the address who receive the fee for every swap.
     * @dev only the owner of the contract can change this address.
     */
-    function setRecipient(address _recipient) 
+    function setRecipient(address payable _recipient) 
         public
         onlyOwner {
             require(_recipient != address(0));
@@ -71,34 +70,35 @@ using SafeMathUpgradeable for uint256;
     * @param _amountOutMin is the amount of tokens the user wants.
     * @param _to is the address of the swap recipient. 
     */
-    function _swap(address _tokenIn, 
-                   address _tokenOut, 
-                   uint256 _amountIn, 
-                   uint256 _amountOutMin, 
-                   address _to)
+    function _swapTokensForTokens(address _tokenIn, 
+                                  address _tokenOut, 
+                                  uint256 _amountIn, 
+                                  uint256 _amountOutMin, 
+                                  address _to)
         internal{
 
             require(_tokenIn != _tokenOut, "You have to change betwen diferent tokens.");
             IERC20Upgradeable(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);
             IERC20Upgradeable(_tokenIn).approve(UniswapV2Router02, _amountIn);
             address[] memory _path;
-            _path = new address[](3);
+            _path = new address[](2);
             _path[0] = _tokenIn;
-            _path[1] = WETH;
-            _path[2] = _tokenOut;
+            _path[1] = _tokenOut;
             IUniswapV2Router02(UniswapV2Router02).
                 swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                    _amountIn, _amountOutMin, _path, _to, block.timestamp);
+                    _amountIn, _amountOutMin, _path, _to, block.timestamp + 1);
         }
     /**
-    * @notice a function to make multiple swaps given a percentage of wanted tokens.
+    * @notice a function to make multiple token swaps given a percentage of wanted tokens.
     * @dev this is the mai function.
     * @param tokenIn the address of the token that the use has.
+    * @param amountIn is the amount of tokens the user has.
     * @param amountOutMin the minimum tokens to get.
     * @param tokensOut an array with addresses of tokens that the user wants.
-    * @param percentage an array with percentages of every token that the user wants. 
+    * @param percentage an array with percentages of every token that the user wants.
+    * @param to is the address of the swap recipient. 
     */
-    function swap(address tokenIn,
+    function swapTokensForTokens(address tokenIn,
                   uint256 amountIn,
                   uint256 amountOutMin, 
                   address[] memory tokensOut, 
@@ -111,7 +111,7 @@ using SafeMathUpgradeable for uint256;
                     "The number of tokens has to be equal to the percentages.");
             uint256 minusFee = amountIn.sub(amountIn.mul(fee));
             for (uint i = 0; i < tokensOut.length; i++) {
-                _swap(
+                _swapTokensForTokens(
                     tokenIn, 
                     tokensOut[i], 
                     minusFee.mul(percentage[i]).div(100), 

@@ -17,14 +17,19 @@
     },
     {
       "address": "0x4bf010f1b9beDA5450a8dD702ED602A104ff65EE",
-      "txHash": "0x48e43355b2563f554e8cac91e551e4d2c7f7e3e54d38cc55c246b19a41ce0afe",
+      "txHash": "0xf54bc91e1b8a08eafc2d21bca7cdbd9b446c3b8812030e3aa2bf413c0008ddfd",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+      "txHash": "0x1834ab484bbbb373b09be5a50307d0bb83b4f8b9922c51c852341604f652091c",
       "kind": "transparent"
     }
   ],
   "impls": {
-    "43d2df6a9297dd0e0f4935a1fec17202f6575d7de6219ca2617b609f9f3a0da9": {
+    "759dccb5a49b4be072522770c0fe138b7cde610df503769ee407f130a46ec6e6": {
       "address": "0x5302E909d1e93e30F05B5D6Eea766363D14F9892",
-      "txHash": "0x19dc7bf15386874e10a5e20542eb0517dbe2308b3ac71ef56a2903003ceb1e94",
+      "txHash": "0xcdeb7da7839a0df5050c34fb5baf27df103dc9160e0f48661fffd167340ce339",
       "layout": {
         "storage": [
           {
@@ -72,15 +77,15 @@
             "offset": 0,
             "slot": "101",
             "type": "t_uint256",
-            "contract": "Swapper",
+            "contract": "Swapper_V1",
             "src": "contracts\\Swapper_V1.sol:33"
           },
           {
             "label": "recipient",
             "offset": 0,
             "slot": "102",
-            "type": "t_address",
-            "contract": "Swapper",
+            "type": "t_address_payable",
+            "contract": "Swapper_V1",
             "src": "contracts\\Swapper_V1.sol:34"
           },
           {
@@ -88,7 +93,7 @@
             "offset": 0,
             "slot": "103",
             "type": "t_address",
-            "contract": "Swapper",
+            "contract": "Swapper_V1",
             "src": "contracts\\Swapper_V1.sol:35"
           },
           {
@@ -96,13 +101,16 @@
             "offset": 0,
             "slot": "104",
             "type": "t_address",
-            "contract": "Swapper",
+            "contract": "Swapper_V1",
             "src": "contracts\\Swapper_V1.sol:36"
           }
         ],
         "types": {
           "t_address": {
             "label": "address"
+          },
+          "t_address_payable": {
+            "label": "address payable"
           },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"
@@ -112,6 +120,141 @@
           },
           "t_bool": {
             "label": "bool"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          }
+        }
+      }
+    },
+    "2fead2d45444415b96dcd2d0c1a73e41effbeaa369114ea29fb2695de4d113e3": {
+      "address": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+      "txHash": "0x774ad090a2e72eb1e0f94170c3481d9cd439130b6f4b9863a0dbb5ee73f5155d",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:87"
+          },
+          {
+            "label": "fee",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "Swapper_V2",
+            "src": "contracts\\Swapper_V2.sol:36"
+          },
+          {
+            "label": "recipient",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_address_payable",
+            "contract": "Swapper_V2",
+            "src": "contracts\\Swapper_V2.sol:37"
+          },
+          {
+            "label": "UniswapV2Router02",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_address",
+            "contract": "Swapper_V2",
+            "src": "contracts\\Swapper_V2.sol:38"
+          },
+          {
+            "label": "WETH",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_address",
+            "contract": "Swapper_V2",
+            "src": "contracts\\Swapper_V2.sol:39"
+          },
+          {
+            "label": "tokenTransferProxy",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_address",
+            "contract": "Swapper_V2",
+            "src": "contracts\\Swapper_V2.sol:40"
+          },
+          {
+            "label": "augustusSwapper",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_address",
+            "contract": "Swapper_V2",
+            "src": "contracts\\Swapper_V2.sol:41"
+          },
+          {
+            "label": "Paraswap",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_contract(IParaswap)2695",
+            "contract": "Swapper_V2",
+            "src": "contracts\\Swapper_V2.sol:42"
+          },
+          {
+            "label": "paraswapTransfers",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_contract(IParaswap)2695",
+            "contract": "Swapper_V2",
+            "src": "contracts\\Swapper_V2.sol:43"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_address_payable": {
+            "label": "address payable"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(IParaswap)2695": {
+            "label": "contract IParaswap"
           },
           "t_uint256": {
             "label": "uint256"

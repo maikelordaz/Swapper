@@ -5,7 +5,7 @@ const { Web3Provider } = require("@ethersproject/providers");
 
 
 //START OF TEST
-describe("Swapper", function () {
+describe("Swapper_V2", function () {
 
   // TOKENS ADDRESSES //
   const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
@@ -31,8 +31,10 @@ describe("Swapper", function () {
     console.log("Gas used", Number(receipt.gasUsed));
   }
   // CONTRACTS //
-    let Swapper;
-    let swapper;
+    let Swapper_V1;
+    let Swapper_V2;
+    let swapper_V1;
+    let swapper_V2;
   // FOR SWAPPING //
     const amountIn = BigNumber.from(10).pow(BigNumber.from(18)).mul(BigNumber.from(1000000)); //1.000.000 DAI
     const amountOutMin = 1;
@@ -45,7 +47,8 @@ describe("Swapper", function () {
   
 beforeEach(async function () {
     // THE CONTRACT IS INITIALIZED //    
-    Swapper = await ethers.getContractFactory("Swapper");
+    Swapper_V1 = await ethers.getContractFactory("Swapper_V1");
+    Swapper_V2 = await ethers.getContractFactory("Swapper_V2");    
     // THE ACCOUNTS AND SIGNERS ARE INITIALIZED //
     [owner, recipient, user] = await ethers.getSigners();
     // THE INTERFACES ARE INITIALIZED //
@@ -55,28 +58,29 @@ beforeEach(async function () {
     link = await ethers.getContractAt("IERC20Upgradeable", linkToken);    
   });
 // TESTS //
-it("Should deploy the swapper contract, first version, upgradeable", async function (){
-  swapper = await upgrades.deployProxy(Swapper);
-  await swapper.deployed();     
+it("Should deploy the second version upgrade.", async function (){
+  swapper_V1 = await upgrades.deployProxy(Swapper_V1);
+  await swapper_V1.deployed();
+  swapper_V2 = await upgrades.upgradeProxy(swapper_V1.address, Swapper_V2);     
 });  
 
-it("Should set the right owner of the swapper", async function (){
-  expect(await swapper.owner()).to.equal(owner.address);
+it("Should set the right owner of the swapper_V1", async function (){
+  expect(await swapper_V2.owner()).to.equal(owner.address);
 });
 
 it("Should set the fee", async function (){
   const _fee = BigNumber.from(1);
-  await swapper.setFee(_fee);
+  await swapper_V2.setFee(_fee);
 });
 
 it("Should set the  recipient of the fees", async function (){
-  await swapper.setRecipient(recipient.address);    
+  await swapper_V2.setRecipient(recipient.address);    
 });
 
 it("Should fail to perform a swap if the amount entered is 0", async function (){
   const tokensOut = [tokenOut.address, link.address];
   const percentage = [60, 40];
-  await expect(swapper.swap(
+  await expect(swapper_V2.swapUniswap(
     tokenIn.address, 0, amountOutMin, tokensOut, percentage, user.address)).
       to.be.revertedWith("You have to change something.");
 });
@@ -85,7 +89,7 @@ it("Should fail to perform a swap if the amount of tokens are differen of the am
   async function (){
     const tokensOut = [tokenOut.address];
     const percentage = [60, 40];
-    await expect(swapper.swap(
+    await expect(swapper_V2.swapUniswap(
       tokenIn.address, amountIn, amountOutMin, tokensOut, percentage, user.address)).
         to.be.revertedWith("The number of tokens has to be equal to the percentages.");
 });
@@ -94,7 +98,7 @@ it("Should fail to perform a swap if the amount of tokens are differen of the am
   async function (){
     const tokensOut = [tokenOut.address, link.address];
     const percentage = [60];
-    await expect(swapper.swap(
+    await expect(swapper_V2.swapUniswap(
     tokenIn.address, amountIn, amountOutMin, tokensOut, percentage, user.address)).
       to.be.revertedWith("The number of tokens has to be equal to the percentages.");
    });
@@ -103,7 +107,7 @@ it("Should fail to perform a swap if the token given by the user is the same tok
   async function (){
   const tokensOut = [tokenIn.address];
   const percentage = [60];
-  await expect(swapper.swap(
+  await expect(swapper_V2.swapUniswap(
     tokenIn.address, amountIn, amountOutMin, tokensOut, percentage, user.address)).
       to.be.revertedWith("You have to change betwen diferent tokens.");
   });
@@ -118,8 +122,8 @@ it("Should perform a swap", async function (){
 
   const tokensOut = [tokenOut.address, link.address];
   const percentage = [60, 40];
-  await tokenIn.connect(signer).approve(swapper.address, amountIn);
-  const tx = await swapper.connect(signer).swap(
+  await tokenIn.connect(signer).approve(swapper_V1.address, amountIn);
+  const tx = await swapper_V2.connect(signer).swapUniswap(
     tokenIn.address, amountIn, amountOutMin, tokensOut, percentage, user.address);
 
   await Gas(tx);
