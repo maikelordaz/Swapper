@@ -22,7 +22,7 @@ import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 
 contract Swapper_V1 is Initializable, OwnableUpgradeable {
 
-using SafeMathUpgradeable for uint256;
+    using SafeMathUpgradeable for uint256;
 
 // VARIABLES //
 
@@ -109,7 +109,7 @@ using SafeMathUpgradeable for uint256;
             require(tokensOut.length == percentage.length, 
                     "The number of tokens has to be equal to the percentages.");
             uint256 minusFee = amountIn.sub(amountIn.mul(fee));
-            for (uint i = 0; i < tokensOut.length; i++) {
+            for (uint256 i = 0; i < tokensOut.length; i++) {
                 _swapTokensForTokens(
                     tokenIn, 
                     tokensOut[i], 

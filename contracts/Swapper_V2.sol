@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: GNL
 /**
-* @title Swapper_V2 tool
+* @title Swapper_V1 tool
 * @author Maikel Ordaz.
 * @notice a multitokens swap smart contract, that allows to make multiple transactions
 * in one single operations, just giving the tokens that we want and the percentage that
@@ -10,194 +10,55 @@
 pragma solidity ^0.8.4;
 
 // CONTRACTS INHERITED //
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-// INTERFACES USED //
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import "./paraswap/IParaswap.sol";
-import "./paraswap/ITokenTransferProxy.sol";
-// LIBRARIES USED //
-import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-import "./paraswap/lib/UtilsParaswap.sol";
+import "./Swapper_V1.sol";
 
-//============================= VERSION 2 =============================================//
+//================================ VERSION 2 ==========================================//
 
-contract Swapper_V2 is Initializable, OwnableUpgradeable {
-
-using SafeMathUpgradeable for uint256;
+contract Swapper_V2 is Swapper_V1 {   
 
 // VARIABLES //
 
-    uint256 public fee;
-    address payable recipient;
-    address private UniswapV2Router02;
-    address private tokenTransferProxy;
-    address private augustusSwapper;
-    IParaswap internal Paraswap;
-    IParaswap internal paraswapTransfers;
-
+    address public augustus; 
 
 // FUNCTIONS //
 
-    function initialize() 
-        public
-        initializer {
-            __Ownable_init(); 
-            UniswapV2Router02 = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-            tokenTransferProxy = 0x216B4B4Ba9F3e719726886d34a177484278Bfcae;
-            augustusSwapper = 0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57;
-            Paraswap = IParaswap(augustusSwapper);
-            paraswapTransfers = IParaswap(tokenTransferProxy);
-                      
-        }
     /**
-    * @notice a function to set the fee for every swap.
-    * @dev only the owner of the contract can change the fee.
-    * @param _fee the percentage of the fee. it has to be multiplied by ten. Example for
-    * a 0.1% the _fee is 1.
+    * @notice a setter function to get the Augustus Swapper address.
     */
-    function setFee(uint _fee) 
+    function setAugustusAddress() 
         public
-        onlyOwner {
-            require(_fee > 0);
-            fee = _fee.div(1000);        
+        returns (address) {
+            augustus = 0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57;
+            return augustus;
     }
     /**
-    * @notice a function to set the address who receive the fee for every swap.
-    * @dev only the owner of the contract can change this address.
+    * @notice a function to use the Paraswap interfaces for swapping.
+    * @dev this function is to swap ETH for tokens.
+    * @param percentages the percentages the user wants for every token.
+    * @param tokensOut the tokens the user wants.
     */
-    function setRecipient(address payable _recipient) 
+    function swapParaswap (bytes[] calldata percentages, 
+                           IERC20Upgradeable[] calldata tokensOut)
         public
-        onlyOwner {
-            require(_recipient != address(0));
-            recipient = _recipient;
-    }
+        payable {
 
-//================================= UNISWAP ===========================================//    
- 
-    /**
-    * @notice a function to swap betwen tokens with uniswap.
-    * @dev this is an auxiliar function.
-    * @param _tokenIn is the address of the token that the user have.
-    * @param _tokenOut is the address of the token that the user wants.
-    * @param _amountIn is the amount of tokens the user has.
-    * @param _amountOutMin is the amount of tokens the user wants.
-    * @param _to is the address of the swap recipient. 
-    */
-    function _swapUniswap(address _tokenIn, 
-                          address _tokenOut, 
-                          uint256 _amountIn, 
-                          uint256 _amountOutMin, 
-                          address _to)
-        internal{
-
-            require(_tokenIn != _tokenOut, "You have to change betwen diferent tokens.");
-            IERC20Upgradeable(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);
-            IERC20Upgradeable(_tokenIn).approve(UniswapV2Router02, _amountIn);
-            address[] memory _path;
-            _path = new address[](2);
-            _path[0] = _tokenIn;
-            _path[1] = _tokenOut;
-            IUniswapV2Router02(UniswapV2Router02).
-                swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                    _amountIn, _amountOutMin, _path, _to, block.timestamp);
-        }
-    /**
-    * @notice a function to make multiple token swaps given a percentage of wanted tokens.
-    * all this on uniswap.
-    * @dev this is the main function.
-    * @param tokenIn the address of the token that the use has.
-    * @param amountIn is the amount of tokens the user has.
-    * @param amountOutMin the minimum tokens to get.
-    * @param tokensOut an array with addresses of tokens that the user wants.
-    * @param percentage an array with percentages of every token that the user wants.
-    * @param to is the address of the swap recipient. 
-    */
-    function swapUniswap(address tokenIn,
-                         uint256 amountIn,
-                         uint256 amountOutMin, 
-                         address[] memory tokensOut, 
-                         uint256[] memory percentage,
-                         address to) 
-        public {
-
-            require(amountIn > 0, "You have to change something.");
-            require(tokensOut.length == percentage.length, 
-                    "The number of tokens has to be equal to the percentages.");
-            uint256 minusFee = amountIn.sub(amountIn.mul(fee));
-            for (uint i = 0; i < tokensOut.length; i++) {
-                _swapUniswap(
-                    tokenIn, 
-                    tokensOut[i], 
-                    minusFee.mul(percentage[i]).div(100), 
-                    amountOutMin, 
-                    to);
+            require(msg.value > 0, "You have to change something");
+            require(percentages.length == tokensOut.length);
+            for (uint256 i = 0; i < tokensOut.length; i++){
+                (bool success, bytes memory response) = 
+                    augustus.call {value: msg.value}(percentages[i]);
+                if (!success) {
+                    if (response.length < 68) revert ();
+                    assembly { response := add(response,0x04)}
+                    revert(abi.decode(response, (string)));
+                }
+            uint256 received = abi.decode(response, (uint256));
+            require(received > 0, "There has been an error.");
+            uint256 balance = tokensOut[i].balanceOf(address(this));
+            require(balance > 0, "There has been an error...");
+            tokensOut[i].transfer(recipient, fee);
+            uint256 amountOut = msg.value - fee;
+            tokensOut[i].transfer(msg.sender, amountOut);
             }
-            payable(recipient).transfer(address(this).balance);
-    }
-
-//==================================== PARASWAP =======================================//
-    /**
-    * @notice a function to swap betwen tokens on paraswap.
-    * @dev this is an auxiliar function.
-    * @param _tokenIn is the address of the token that the user have.
-    * @param _tokenOut is the address of the token that the user wants.
-    * @param _amountIn is the amount of tokens the user has.
-    * @param _slippage to sort the movement of the price. 
-    */
-    function _swapParaswap(address _tokenIn, 
-                           address _tokenOut, 
-                           uint256 _amountIn,
-                           uint256 _slippage)
-        internal{
-
-            require(_tokenIn != _tokenOut, "You have to change betwen diferent tokens.");
-            IERC20Upgradeable(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);
-            IERC20Upgradeable(_tokenIn).approve(tokenTransferProxy, _amountIn);
-            uint256[] memory startIndexes = new uint256[](1);
-            startIndexes[1] = 1;
-            uint256 _toAmount = _amountIn * (1 - _slippage / 100);           
-            address[] memory _path;
-            _path = new address[](2);
-            _path[0] = _tokenIn;
-            _path[1] = _tokenOut;
-            (bool result, ) = augustusSwapper.call{value: _amountIn, gas: 10000}(
-            abi.encodeWithSignature("swapOnUniswap(uint256 amountIn, uint256 amountOutMin, address[] calldata path)",
-            _amountIn,
-            _toAmount,
-            _path));
-        }
-    /**
-    * @notice a function to make multiple token swaps given a percentage of wanted tokens.
-    * all this on paraswap.
-    * @dev this is the main function.
-    * @param tokenIn the address of the token that the use has.
-    * @param amountIn is the amount of tokens the user has.
-    * @param slippage to sort the movement of the price.
-    * @param tokensOut an array with addresses of tokens that the user wants.
-    * @param percentage an array with percentages of every token that the user wants.
-    */
-    function swapParaswap(address tokenIn,
-                          uint256 amountIn,
-                          uint256 slippage, 
-                          address[] memory tokensOut, 
-                          uint256[] memory percentage) 
-        public {
-
-            require(amountIn > 0, "You have to change something.");
-            require(tokensOut.length == percentage.length, 
-                    "The number of tokens has to be equal to the percentages.");
-            uint256 minusFee = amountIn.sub(amountIn.mul(fee));
-            for (uint i = 0; i < tokensOut.length; i++) {
-                _swapParaswap(
-                    tokenIn, 
-                    tokensOut[i], 
-                    minusFee.mul(percentage[i]).div(100), 
-                    slippage);
-            }
-            payable(recipient).transfer(address(this).balance);
-    }
-
-
+    }    
 }
