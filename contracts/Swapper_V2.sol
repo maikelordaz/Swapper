@@ -11,6 +11,7 @@ pragma solidity ^0.8.4;
 
 // CONTRACTS INHERITED //
 import "./Swapper_V1.sol";
+import "hardhat/console.sol";
 
 //================================ VERSION 2 ==========================================//
 
@@ -21,7 +22,6 @@ contract Swapper_V2 is Swapper_V1 {
     address public augustus; 
 
 // FUNCTIONS //
-
     /**
     * @notice a setter function to get the Augustus Swapper address.
     */
@@ -34,19 +34,19 @@ contract Swapper_V2 is Swapper_V1 {
     /**
     * @notice a function to use the Paraswap interfaces for swapping.
     * @dev this function is to swap ETH for tokens.
-    * @param percentages the percentages the user wants for every token.
+    * @param datas data needed by paraswap.
     * @param tokensOut the tokens the user wants.
     */
-    function swapParaswap (bytes[] calldata percentages, 
+    function swapParaswap (bytes[] calldata datas, 
                            IERC20Upgradeable[] calldata tokensOut)
         public
         payable {
 
-            require(msg.value > 0, "You have to change something");
-            require(percentages.length == tokensOut.length);
-            for (uint256 i = 0; i < tokensOut.length; i++){
+            require(msg.value > 0, "You have to change something.");
+            require(datas.length == tokensOut.length, "It has to be equal size");
+            for (uint256 i = 0; i < tokensOut.length; i++){                
                 (bool success, bytes memory response) = 
-                    augustus.call {value: msg.value}(percentages[i]);
+                    augustus.call {value: msg.value}(datas[i]);
                 if (!success) {
                     if (response.length < 68) revert ();
                     assembly { response := add(response,0x04)}
@@ -60,5 +60,5 @@ contract Swapper_V2 is Swapper_V1 {
             uint256 amountOut = msg.value - fee;
             tokensOut[i].transfer(msg.sender, amountOut);
             }
-    }    
+    } 
 }

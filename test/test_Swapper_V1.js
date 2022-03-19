@@ -3,8 +3,15 @@ const { network, ethers, web3 } = require("hardhat");
 const { Contract, BigNumber, providers } = require("ethers");
 const { Web3Provider } = require("@ethersproject/providers");
 
+  // PAYMENTS //
+  const toWei = (num) => String(ethers.utils.parseEther(String(num)));
+  const fromWei = (num) => Number(ethers.utils.formatEther(num));
+  // GAS //
+  const Gas = async (tx) => {
+    const receipt = await tx.wait();
+    console.log("Gas used", Number(receipt.gasUsed));
+  }
 
-//START OF TEST
 describe("Swapper_V1", function () {
 
   // TOKENS ADDRESSES //
@@ -22,14 +29,6 @@ describe("Swapper_V1", function () {
   // INTERFACES //
   const UniswapV2Router02 = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
   const ROUTER = UniswapV2Router02;
-  // PAYMENTS //
-  const toWei = (num) => String(ethers.utils.parseEther(String(num)));
-  const fromWei = (num) => Number(ethers.utils.formatEther(num));
-  // GAS //
-  const Gas = async (tx) => {
-    const receipt = await tx.wait();
-    console.log("Gas used", Number(receipt.gasUsed));
-  }
   // CONTRACTS //
     let Swapper_V1;
     let swapper_V1;
@@ -54,7 +53,7 @@ beforeEach(async function () {
     tokenOut = await ethers.getContractAt("IERC20Upgradeable", TOKEN_OUT);
     link = await ethers.getContractAt("IERC20Upgradeable", linkToken);    
   });
-// TESTS //
+// START OF THE TESTS //
 it("Should deploy the swapper_V1 contract, first version, upgradeable", async function (){
   swapper_V1 = await upgrades.deployProxy(Swapper_V1);
   await swapper_V1.deployed();     
