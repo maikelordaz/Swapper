@@ -4,7 +4,8 @@ const { Contract, providers } = require("ethers");
 const { BigNumber } = require ("bignumber.js");
 const { ParaSwap } = require("paraswap");
 const { SwapSide } = require("paraswap-core");
-const { tokens } = require("./tokens1");
+const { tokens } = require("./tokens");
+const axios = require("axios");
 
   // PAYMENTS //
   const toWei = (num) => String(ethers.utils.parseEther(String(num)));
@@ -27,11 +28,11 @@ describe("Swapper_V2", function () {
     let swapper_V1;
     let swapper_V2;
   // FOR SWAPPING //
-    const networkID = 1;
+    const networkID = 137;
     const amountIn = toWei(1);
     const partner = "Goku";
     const apiURL = "https://apiv5.paraswap.io";
-    const slippage = 5;
+    const slippage = 1;
   // SIGNERS //    
     let owner;
     let recipient;
@@ -83,32 +84,43 @@ it("Should set the right address of the augustus swapper", async function (){
 it("Should fail to perform a swap if the user does not pay", async function (){
     const tokensOut = [tokenOut.address];
     const datas = [60];
-    await expect(swapper_V2.swapParaswap(datas, tokensOut)).
-        to.be.revertedWith("You have to change something.");
+    const percentages = [100]
+    await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages)).
+        to.be.revertedWith("You have to pay something.");
 });
 
 it("Should fail to perform a swap if the arguments does not complete the requirements",
   async function (){
     const tokensOut = [tokenOut.address];
     const datas = [60, 40];
-    await expect(swapper_V2.swapParaswap(datas, tokensOut, {value: toWei(1)})).
-        to.be.revertedWith("It has to be equal size");
+    const percentages = [50, 50]
+    await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages, {value: toWei(1)})).
+        to.be.revertedWith("It has to be equal size.");
 });
 
+it("Should fail to perform a swap if the arguments does not complete the requirements",
+  async function (){
+    const tokensOut = [tokenOut.address, tokenOut.address];
+    const datas = [60, 40];
+    const percentages = [100]
+    await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages, {value: toWei(1)})).
+        to.be.revertedWith("It has to be equal size.");
+});
 
+it("Should fail to perform a swap if a percentage is equal to 0",
+  async function (){
+    const tokensOut = [tokenOut.address, tokenOut.address];
+    const datas = [60, 40];
+    const percentages = [0, 100]
+    await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages, {value: toWei(1)})).
+        to.be.revertedWith("You have to give something for this token.");
+});
 
-it("Should perform a swap with paraswap", async function (){
-  const srcToken = getToken("ETH");
+ it("Should perform a swap", async function (){
+  const srcToken = getToken("MATIC");
   const destToken = getToken("AAVE");
-  /* GET RATE PARAMS
-    route: AddressOrSymbol[],
-    amount: PriceString,
-    userAddress?: Address,
-    side: SwapSide = SwapSide.SELL,
-    options?: RateOptions,
-    srcDecimals?: number,
-    destDecimals?: number,
-  */
+  const percentage = new BigNumber(100);
+
   const rateRoute = await paraswap.getRate(
     srcToken.address,
     destToken.address,
@@ -125,23 +137,7 @@ it("Should perform a swap with paraswap", async function (){
 
   const amountOutMin = new BigNumber(rateRoute.destAmount).times(1-slippage/100).
     toFixed(0);
-  /* BUILD TX PARAMS
-  srcToken: Address,
-    destToken: Address,
-    srcAmount: PriceString,
-    destAmount: PriceString,
-    priceRoute: OptimalRate,
-    userAddress: Address,
-    partner?: string,
-    partnerAddress?: string,
-    partnerFeeBps?: number,
-    receiver?: Address,
-    options: BuildOptions = {},
-    srcDecimals?: number,
-    destDecimals?: number,
-    permit?: string,
-    deadline?: string,
-  */
+
   const txRequest = await paraswap.buildTx(
     srcToken.address,
     destToken.address,
@@ -162,7 +158,7 @@ it("Should perform a swap with paraswap", async function (){
   expect(txRequest.chainId).to.eq(networkID);
 
   const tx = await swapper_V2.connect(user).swapParaswap(
-    [txRequest.data],[destToken.address], { value: amountIn});    
+    [txRequest.data], [destToken.address], [percentage], { value: amountIn,});    
 
   await Gas(tx);  
 
@@ -171,6 +167,6 @@ it("Should perform a swap with paraswap", async function (){
 
   expect(await tokenReceived.balanceOf(user.address)).to.not.equal(0);
  });
-  
+
 })
 
