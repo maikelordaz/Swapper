@@ -46,18 +46,18 @@ contract Swapper_V2 is Swapper_V1 {
         payable {
             
             require(msg.value > 0, "You have to pay something.");            
-            require(datas.length == tokensOut.length, "It has to be equal size.");            
+            require(datas.length == tokensOut.length, "It has to be equal size with tokens.");            
             require(percentages.length == tokensOut.length, "It has to be equal size.");            
             for (uint256 i = 0; i < tokensOut.length; i++){                                
                 require(percentages[i] > 0, "You have to give something for this token."); 
-                require(percentages[i] < 100, "You can not swap more than you have.");               
+                require(percentages[i] <= 100, "You can not swap more than you have.");               
                 uint256 amountIn = msg.value * percentages[i];                        
                 (bool success, bytes memory response) = 
-                    augustus.call {value: amountIn}(datas[i]);
-                if (!success) {                   
-                    if (response.length < 68) revert ();                  
+                    augustus.call {value: amountIn}(datas[i]);                                     
+                if (!success) {                                                   
+                    if (response.length < 68) revert ();                                        
                     assembly { response := add(response,0x04)}
-                    revert(abi.decode(response, (string)));                
+                    revert(abi.decode(response, (string)));                               
                 }
                 uint256 received = abi.decode(response, (uint256));
                 require(received > 0, "There has been an error.");            

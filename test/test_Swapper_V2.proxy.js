@@ -95,7 +95,7 @@ it("Should fail to perform a swap if the arguments does not complete the require
     const datas = [60, 40];
     const percentages = [50, 50]
     await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages, {value: toWei(1)})).
-        to.be.revertedWith("It has to be equal size.");
+        to.be.revertedWith("It has to be equal size with tokens.");
 });
 
 it("Should fail to perform a swap if the arguments does not complete the requirements",
@@ -125,12 +125,14 @@ it("Should fail to perform a swap if a percentage is higher than 100",
         to.be.revertedWith("You can not swap more than you have.");
 });
 
-it("Should perform a swap whith paraswap", async function (){
+ it("Should perform a swap whith paraswap", async function (){
   const srcToken = getToken("MATIC");
-  const destToken1 = getToken("AAVE");
-  const destToken2 = getToken("USDT");
+  const destToken1 = getToken("UNI");
+  const destToken2 = getToken("BIFI");
   const destToken = [destToken1, destToken2];
+  const destTokenAddress = [];
   const percentage = [80, 20];
+  const requestData = [];
 
   for(let i = 0; i < percentage.length; i++){
     realAmountIn = toWei(amountIn * percentage[i] / 100);
@@ -174,19 +176,24 @@ it("Should perform a swap whith paraswap", async function (){
 
     expect(txRequest.chainId).to.eq(networkID);
 
-    const tx = await swapper_V2.connect(user).swapParaswap(
-      [txRequest.data], [destToken[i].address], [percentage[i]], { value: realAmountIn});
-
-      await Gas(tx); 
-
-    const tokenReceived = await ethers.getContractAt(
-        "IERC20Upgradeable", destToken[i].address);
-
-    expect(await tokenReceived.balanceOf(user.address)).to.not.equal(0);
+    requestData.push(txRequest.data);
+    destTokenAddress.push(destToken[i].address);
 
   }
+   
+  const tx = await swapper_V2.connect(user).swapParaswap(
+    requestData, destTokenAddress, percentage, { value: amountIn});
+    await Gas(tx); 
+
+  for (let j =0; j < destToken.length; j++) {
+
+    const tokenReceived = await ethers.getContractAt(
+      "IERC20Upgradeable", destToken[j].address);
+
+  expect(await tokenReceived.balanceOf(user.address)).to.not.equal(0);
+
+  } 
   
  });
-  
 })
 
