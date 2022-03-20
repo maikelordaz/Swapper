@@ -29,11 +29,11 @@ describe("Swapper_V2", function () {
     let swapper_V2;
   // FOR SWAPPING //
     const networkID = 137;
-    const amountIn = toWei(1);
+    const amountIn = 1;
     const _fee = 1;
     const partner = "Goku";
     const apiURL = "https://apiv5.paraswap.io";
-    const slippage = 5;
+    const slippage = 1;
   // SIGNERS //    
     let owner;
     let recipient;
@@ -130,10 +130,11 @@ it("Should perform a swap whith paraswap", async function (){
   const destToken1 = getToken("AAVE");
   const destToken2 = getToken("USDT");
   const destToken = [destToken1, destToken2];
-  const percentage = [50, 50];
+  const percentage = [80, 20];
 
   for(let i = 0; i < percentage.length; i++){
-    realAmountIn = amountIn * percentage[i] / 100;
+    realAmountIn = toWei(amountIn * percentage[i] / 100);
+
 
     const rateRoute = await paraswap.getRate(
       srcToken.address,
@@ -174,7 +175,7 @@ it("Should perform a swap whith paraswap", async function (){
     expect(txRequest.chainId).to.eq(networkID);
 
     const tx = await swapper_V2.connect(user).swapParaswap(
-      [txRequest.data], [destToken[i].address], [percentage[i]], { value: amountIn});
+      [txRequest.data], [destToken[i].address], [percentage[i]], { value: realAmountIn});
 
       await Gas(tx); 
 

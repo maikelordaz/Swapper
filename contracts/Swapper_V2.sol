@@ -54,8 +54,8 @@ contract Swapper_V2 is Swapper_V1 {
                 uint256 amountIn = msg.value * percentages[i];                        
                 (bool success, bytes memory response) = 
                     augustus.call {value: amountIn}(datas[i]);
-                if (!success) {
-                    if (response.length < 68) revert ();                     
+                if (!success) {                   
+                    if (response.length < 68) revert ();                  
                     assembly { response := add(response,0x04)}
                     revert(abi.decode(response, (string)));                
                 }
