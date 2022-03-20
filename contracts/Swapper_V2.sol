@@ -55,8 +55,7 @@ contract Swapper_V2 is Swapper_V1 {
                 (bool success, bytes memory response) = 
                     augustus.call {value: amountIn}(datas[i]);
                 if (!success) {
-                    console.log("AQUIIIII"); 
-                    if (response.length < 68) revert ();
+                    if (response.length < 68) revert ();                     
                     assembly { response := add(response,0x04)}
                     revert(abi.decode(response, (string)));                
                 }

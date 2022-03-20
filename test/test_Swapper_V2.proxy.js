@@ -30,6 +30,7 @@ describe("Swapper_V2", function () {
   // FOR SWAPPING //
     const networkID = 137;
     const amountIn = toWei(1);
+    const _fee = 1;
     const partner = "Goku";
     const apiURL = "https://apiv5.paraswap.io";
     const slippage = 5;
@@ -69,7 +70,6 @@ it("Should set the right owner of the swapper_V2", async function (){
 });
 
 it("Should set the fee", async function (){
-  const _fee = 1;
   await swapper_V2.setFee(_fee);
 });
 
@@ -124,7 +124,8 @@ it("Should fail to perform a swap if a percentage is higher than 100",
     await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages, {value: toWei(1)})).
         to.be.revertedWith("You can not swap more than you have.");
 });
-it("Should perform a swap", async function (){
+
+it("Should perform a swap whith paraswap", async function (){
   const srcToken = getToken("MATIC");
   const destToken1 = getToken("AAVE");
   const destToken2 = getToken("USDT");
