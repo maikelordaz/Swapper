@@ -32,7 +32,7 @@ describe("Swapper_V2", function () {
     const amountIn = toWei(1);
     const partner = "Goku";
     const apiURL = "https://apiv5.paraswap.io";
-    const slippage = 1;
+    const slippage = 5;
   // SIGNERS //    
     let owner;
     let recipient;
@@ -116,57 +116,75 @@ it("Should fail to perform a swap if a percentage is equal to 0",
         to.be.revertedWith("You have to give something for this token.");
 });
 
- it("Should perform a swap", async function (){
+it("Should fail to perform a swap if a percentage is higher than 100",
+  async function (){
+    const tokensOut = [tokenOut.address, tokenOut.address];
+    const datas = [60, 40];
+    const percentages = [150, 5]
+    await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages, {value: toWei(1)})).
+        to.be.revertedWith("You can not swap more than you have.");
+});
+it("Should perform a swap", async function (){
   const srcToken = getToken("MATIC");
-  const destToken = getToken("AAVE");
-  const percentage = new BigNumber(100);
+  const destToken1 = getToken("AAVE");
+  const destToken2 = getToken("USDT");
+  const destToken = [destToken1, destToken2];
+  const percentage = [50, 50];
 
-  const rateRoute = await paraswap.getRate(
-    srcToken.address,
-    destToken.address,
-    amountIn,
-    swapper_V2.address,
-    SwapSide.SELL,
-    { partner },
-    srcToken.decimals,
-    destToken.decimals);
-  console.log("\ngetRate", rateRoute);
-  if("message" in rateRoute) {
-    throw new Error(rateRoute.message);
-  }
+  for(let i = 0; i < percentage.length; i++){
+    realAmountIn = amountIn * percentage[i] / 100;
 
-  const amountOutMin = new BigNumber(rateRoute.destAmount).times(1-slippage/100).
+    const rateRoute = await paraswap.getRate(
+      srcToken.address,
+      destToken[i].address,
+      realAmountIn,
+      swapper_V2.address,
+      SwapSide.SELL,
+      { partner },
+      srcToken.decimals,
+      destToken[i].decimals);
+    console.log("\ngetRate", rateRoute);
+
+    if("message" in rateRoute) {
+      throw new Error(rateRoute.message);
+    }
+
+    const amountOutMin = new BigNumber(rateRoute.destAmount).times(1-slippage/100).
     toFixed(0);
 
-  const txRequest = await paraswap.buildTx(
-    srcToken.address,
-    destToken.address,
-    amountIn,
-    amountOutMin,
-    rateRoute,
-    swapper_V2.address,
-    partner,
-    undefined,
-    undefined,
-    swapper_V2.address,
-    { ignoreChecks: true});
-  console.log("\nbuildTx", txRequest);
-  if("message" in txRequest) {
-    throw new Error(txRequest.message);
+    const txRequest = await paraswap.buildTx(
+      srcToken.address,
+      destToken[i].address,
+      realAmountIn,
+      amountOutMin,
+      rateRoute,
+      swapper_V2.address,
+      partner,
+      undefined,
+      undefined,
+      swapper_V2.address,
+      { ignoreChecks: true});
+    console.log("\nbuildTx", txRequest);
+
+    if("message" in txRequest) {
+      throw new Error(txRequest.message);
+    }
+
+    expect(txRequest.chainId).to.eq(networkID);
+
+    const tx = await swapper_V2.connect(user).swapParaswap(
+      [txRequest.data], [destToken[i].address], [percentage[i]], { value: amountIn});
+
+      await Gas(tx); 
+
+    const tokenReceived = await ethers.getContractAt(
+        "IERC20Upgradeable", destToken[i].address);
+
+    expect(await tokenReceived.balanceOf(user.address)).to.not.equal(0);
+
   }
   
-  expect(txRequest.chainId).to.eq(networkID);
-
-  const tx = await swapper_V2.connect(user).swapParaswap(
-    [txRequest.data], [destToken.address], [percentage], { value: amountIn,});    
-
-  await Gas(tx);  
-
-  const tokenReceived = await ethers.getContractAt(
-    "IERC20Upgradeable", destToken.address);
-
-  expect(await tokenReceived.balanceOf(user.address)).to.not.equal(0);
  });
-
+  
 })
 
