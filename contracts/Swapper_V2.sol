@@ -12,11 +12,13 @@ pragma solidity ^0.8.4;
 // CONTRACTS INHERITED //
 import "./Swapper_V1.sol";
 import "hardhat/console.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 //================================ VERSION 2 ==========================================//
 
 contract Swapper_V2 is Swapper_V1 {   
 
+using SafeERC20Upgradeable for IERC20Upgradeable;
 // VARIABLES //
 
     address public augustus; 
@@ -31,6 +33,7 @@ contract Swapper_V2 is Swapper_V1 {
             augustus = 0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57;
             return augustus;
     }
+    
     /**
     * @notice a function to use the Paraswap interfaces for swapping.
     * @dev this function is to swap ETH for tokens.
@@ -38,7 +41,8 @@ contract Swapper_V2 is Swapper_V1 {
     * @param tokensOut the tokens the user wants.
     * @param percentages an array of values, regarding the percentages of every 
     * destination token the user wants.
-    */    
+    */
+     
     function swapParaswap (bytes[] calldata datas, 
                            IERC20Upgradeable[] calldata tokensOut,
                            uint256[] memory percentages)
@@ -46,16 +50,18 @@ contract Swapper_V2 is Swapper_V1 {
         payable {
             
             require(msg.value > 0, "You have to pay something.");            
-            require(datas.length == tokensOut.length, "It has to be equal size with tokens.");            
-            require(percentages.length == tokensOut.length, "It has to be equal size.");            
+            require(datas.length == tokensOut.length && 
+                percentages.length == tokensOut.length, 
+                "You have to complete the requires.");                        
             for (uint256 i = 0; i < tokensOut.length; i++){                                
-                require(percentages[i] > 0, "You have to give something for this token."); 
-                require(percentages[i] <= 100, "You can not swap more than you have.");               
+                require(percentages[i] > 0 && 
+                    percentages[i] <= 100 , 
+                    "You have to change something betwen 0 and 100%.");              
                 uint256 amountIn = msg.value * percentages[i];                        
                 (bool success, bytes memory response) = 
                     augustus.call {value: amountIn}(datas[i]);                                     
                 if (!success) {                                                   
-                    if (response.length < 68) revert ();                                        
+                    if (response.length < 68) revert ("The contract did not respond the call.");                                        
                     assembly { response := add(response,0x04)}
                     revert(abi.decode(response, (string)));                               
                 }
@@ -68,5 +74,5 @@ contract Swapper_V2 is Swapper_V1 {
                 uint256 recipientFee = received - minusFee;
                 tokensOut[i].transfer(recipient, recipientFee);          
             }
-    } 
+    }
 }

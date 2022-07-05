@@ -95,7 +95,7 @@ it("Should fail to perform a swap if the arguments does not complete the require
     const datas = [60, 40];
     const percentages = [50, 50]
     await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages, {value: toWei(1)})).
-        to.be.revertedWith("It has to be equal size with tokens.");
+        to.be.revertedWith("You have to complete the requires.");
 });
 
 it("Should fail to perform a swap if the arguments does not complete the requirements",
@@ -104,7 +104,7 @@ it("Should fail to perform a swap if the arguments does not complete the require
     const datas = [60, 40];
     const percentages = [100]
     await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages, {value: toWei(1)})).
-        to.be.revertedWith("It has to be equal size.");
+        to.be.revertedWith("You have to complete the requires.");
 });
 
 it("Should fail to perform a swap if a percentage is equal to 0",
@@ -113,7 +113,7 @@ it("Should fail to perform a swap if a percentage is equal to 0",
     const datas = [60, 40];
     const percentages = [0, 100]
     await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages, {value: toWei(1)})).
-        to.be.revertedWith("You have to give something for this token.");
+        to.be.revertedWith("You have to change something betwen 0 and 100%.");
 });
 
 it("Should fail to perform a swap if a percentage is higher than 100",
@@ -122,13 +122,13 @@ it("Should fail to perform a swap if a percentage is higher than 100",
     const datas = [60, 40];
     const percentages = [150, 5]
     await expect(swapper_V2.swapParaswap(datas, tokensOut, percentages, {value: toWei(1)})).
-        to.be.revertedWith("You can not swap more than you have.");
+        to.be.revertedWith("You have to change something betwen 0 and 100%.");
 });
 
  it("Should perform a swap whith paraswap", async function (){
   const srcToken = getToken("MATIC");
-  const destToken1 = getToken("UNI");
-  const destToken2 = getToken("BIFI");
+  const destToken1 = getToken("AAVE");
+  const destToken2 = getToken("USDT");
   const destToken = [destToken1, destToken2];
   const destTokenAddress = [];
   const percentage = [80, 20];
@@ -181,7 +181,7 @@ it("Should fail to perform a swap if a percentage is higher than 100",
 
   }
    
-  const tx = await swapper_V2.connect(user).swapParaswap(
+  const tx = await swapper_V2.swapParaswap(
     requestData, destTokenAddress, percentage, { value: amountIn});
     await Gas(tx); 
 
@@ -190,10 +190,12 @@ it("Should fail to perform a swap if a percentage is higher than 100",
     const tokenReceived = await ethers.getContractAt(
       "IERC20Upgradeable", destToken[j].address);
 
-  expect(await tokenReceived.balanceOf(user.address)).to.not.equal(0);
+  expect(await tokenReceived.balanceOf(owner.address)).to.not.equal(0);
 
   } 
   
  });
+
+
 })
 
